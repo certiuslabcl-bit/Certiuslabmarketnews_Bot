@@ -48,7 +48,7 @@ jobs:
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: "openai/gpt-oss-120b"
-          ALERT_THRESHOLD: "0.2"
+          ALERT_THRESHOLD: "0.55"
           MAX_LLM_CALLS_PER_CYCLE: "4"
           MAX_ARTICLE_AGE_HOURS: "3"
         run: python bot.py --once
