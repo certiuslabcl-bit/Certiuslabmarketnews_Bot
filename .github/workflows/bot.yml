@@ -48,8 +48,8 @@ jobs:
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
           LLM_MODEL: "gemini-3.8-flash"
-          ALERT_THRESHOLD: "0.55"
-          MAX_LLM_CALLS_PER_CYCLE: "8"
+          ALERT_THRESHOLD: "0.2"
+          MAX_LLM_CALLS_PER_CYCLE: "4"
           MAX_ARTICLE_AGE_HOURS: "3"
         run: python bot.py --once
 
