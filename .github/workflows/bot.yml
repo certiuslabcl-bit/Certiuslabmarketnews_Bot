@@ -47,7 +47,7 @@ jobs:
           AZURE_OPENAI_API_VERSION: "2024-10-21"
           LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
           LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          LLM_MODEL: "gemini-3.8-flash"
           ALERT_THRESHOLD: "0.55"
           MAX_LLM_CALLS_PER_CYCLE: "8"
           MAX_ARTICLE_AGE_HOURS: "3"
