@@ -1,4 +1,4 @@
-name: QuantNews
+name: Certiuslabmarketnews_Bot
 
 on:
   schedule:
@@ -11,7 +11,7 @@ permissions:
   actions: write                # lets the job re-enable itself (keep-alive)
 
 concurrency:
-  group: quantnews
+  group: Certiuslabmarketnews_Bot
   cancel-in-progress: false
 
 jobs:
@@ -78,4 +78,4 @@ jobs:
         continue-on-error: true
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow enable "QuantNews" --repo "${{ github.repository }}"
+        run: gh workflow enable "Certiuslabmarketnews_Bot" --repo "${{ github.repository }}"
