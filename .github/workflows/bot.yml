@@ -1,0 +1,81 @@
+name: QuantNews
+
+on:
+  schedule:
+    - cron: "*/15 * * * 1-5"   # weekdays: every 15 min (UTC)
+    - cron: "0 * * * 0,6"      # weekends: hourly (geopolitics/weather never sleep)
+  workflow_dispatch:            # manual "Run workflow" button
+
+permissions:
+  contents: read
+  actions: write                # lets the job re-enable itself (keep-alive)
+
+concurrency:
+  group: quantnews
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      # Restore memory (seen news + signal log) from the previous run
+      - name: Restore state
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            seen.db
+            signals.csv
+          key: state-${{ github.run_id }}
+          restore-keys: state-
+
+      - name: Run one cycle
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+          AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+          AZURE_OPENAI_API_VERSION: "2024-10-21"
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_MODEL: ${{ secrets.LLM_MODEL }}
+          ALERT_THRESHOLD: "0.55"
+          MAX_LLM_CALLS_PER_CYCLE: "8"
+          MAX_ARTICLE_AGE_HOURS: "3"
+        run: python bot.py --once
+
+      # Save memory for the next run
+      - name: Save state
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            seen.db
+            signals.csv
+          key: state-${{ github.run_id }}
+
+      # Download this from the run page to backtest
+      - name: Upload signal log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: signals
+          path: signals.csv
+          if-no-files-found: ignore
+          retention-days: 30
+
+      # GitHub pauses scheduled jobs after 60 days of repo inactivity; this resets it
+      - name: Keep schedule alive
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow enable "QuantNews" --repo "${{ github.repository }}"
